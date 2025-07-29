@@ -50,10 +50,28 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const result = await pool.query('SELECT id, email, hashed_password FROM users WHERE email = $1', [email]);
+    let result = await pool.query('SELECT id, email, hashed_password FROM users WHERE email = $1', [email]);
     
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      const userCount = await pool.query('SELECT COUNT(*) FROM users');
+      
+      if (parseInt(userCount.rows[0].count) === 0) {
+        const hashedPassword = await argon2.hash(password);
+        
+        const newUserResult = await pool.query(
+          'INSERT INTO users (email, hashed_password) VALUES ($1, $2) RETURNING id, email, created_at',
+          [email, hashedPassword]
+        );
+
+        req.session.userId = newUserResult.rows[0].id;
+        
+        return res.status(201).json({
+          message: 'First user registered and logged in successfully',
+          user: { id: newUserResult.rows[0].id, email: newUserResult.rows[0].email }
+        });
+      } else {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
     }
 
     const user = result.rows[0];
