@@ -29,6 +29,7 @@ services:
       PORT: 3000
       UPLOAD_PATH: /app/uploads
       MAX_FILE_SIZE: 10737418240
+      FRONTEND_URL: https://xxx.ladisch-energie.de
     volumes:
       - uploads_data:/app/uploads
     ports:

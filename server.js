@@ -4,6 +4,15 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+if (process.env.NODE_ENV === 'production') {
+  const requiredEnvVars = ['SESSION_SECRET', 'DB_HOST', 'DB_PASSWORD'];
+  const missing = requiredEnvVars.filter(varName => !process.env[varName]);
+  if (missing.length > 0) {
+    console.error('Missing required environment variables:', missing);
+    process.exit(1);
+  }
+}
+
 const authRoutes = require('./routes/auth');
 const videoRoutes = require('./routes/videos');
 const categoryRoutes = require('./routes/categories');
@@ -14,7 +23,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? true : 'http://localhost:5173',
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URL || false 
+    : 'http://localhost:5173',
   credentials: true
 }));
 
