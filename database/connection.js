@@ -13,4 +13,16 @@ pool.on('error', (err) => {
   process.exit(-1);
 });
 
+pool.on('connect', () => {
+  console.log('Database connected successfully');
+});
+
+pool.query('SELECT NOW()', (err, result) => {
+  if (err) {
+    console.error('Database connection test failed:', err);
+  } else {
+    console.log('Database connection test successful:', result.rows[0]);
+  }
+});
+
 module.exports = pool;
