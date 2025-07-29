@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Layout from './Layout';
-import { Heart, ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { Heart, ArrowLeft, Trash2 } from 'lucide-react';
 
 interface VideoPlayerProps {
   user: any;
@@ -42,7 +42,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ user, onLogout }) => {
       } else {
         await axios.post(`/api/favorites/${video.id}`);
       }
-      setVideo(prev => ({ ...prev, is_favorite: !prev.is_favorite }));
+      setVideo((prev: any) => ({ ...prev, is_favorite: !prev.is_favorite }));
     } catch (error) {
       console.error('Error toggling favorite:', error);
     }
@@ -177,7 +177,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ user, onLogout }) => {
                 <div>
                   <h3 className="text-lg font-medium text-dark-text mb-2">Tags</h3>
                   <div className="flex flex-wrap gap-2">
-                    {video.tag_names.map((tag) => (
+                    {video.tag_names.map((tag: string) => (
                       <span
                         key={tag}
                         className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm"
