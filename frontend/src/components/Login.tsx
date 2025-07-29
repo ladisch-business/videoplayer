@@ -75,9 +75,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </button>
         </form>
         
-        <div className="mt-4 text-center text-sm text-dark-text-secondary">
-          Beim ersten Login wird automatisch ein Benutzerkonto erstellt.
-        </div>
       </div>
     </div>
   );
