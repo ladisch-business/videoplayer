@@ -18,8 +18,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json({ limit: '2gb' }));
-app.use(express.urlencoded({ extended: true, limit: '2gb' }));
+app.use(express.json({ limit: '10gb' }));
+app.use(express.urlencoded({ extended: true, limit: '10gb' }));
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'fallback-secret-key',
