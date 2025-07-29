@@ -30,6 +30,9 @@ router.post('/', requireAuth, async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Create category error:', error);
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Category name already exists' });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -50,6 +53,9 @@ router.put('/:id', requireAuth, async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Update category error:', error);
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Category name already exists' });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });
