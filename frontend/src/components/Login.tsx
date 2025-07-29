@@ -8,7 +8,6 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -18,9 +17,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setLoading(true);
 
     try {
-      const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-      const response = await axios.post(endpoint, { email, password });
-      
+      const response = await axios.post('/api/auth/login', { email, password });
       onLogin(response.data.user);
     } catch (error: any) {
       setError(error.response?.data?.error || 'Ein Fehler ist aufgetreten');
@@ -33,7 +30,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <div className="min-h-screen bg-dark-bg flex items-center justify-center">
       <div className="bg-dark-surface p-8 rounded-lg shadow-lg w-full max-w-md border border-dark-border">
         <h1 className="text-2xl font-bold text-center mb-6 text-dark-text">
-          {isRegister ? 'Registrierung' : 'Anmeldung'}
+          Anmeldung
         </h1>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,17 +71,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-medium py-2 px-4 rounded-md transition-colors"
           >
-            {loading ? 'Wird verarbeitet...' : (isRegister ? 'Registrieren' : 'Anmelden')}
+            {loading ? 'Wird verarbeitet...' : 'Anmelden'}
           </button>
         </form>
         
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => setIsRegister(!isRegister)}
-            className="text-blue-400 hover:text-blue-300 text-sm"
-          >
-            {isRegister ? 'Bereits registriert? Anmelden' : 'Noch nicht registriert? Registrieren'}
-          </button>
+        <div className="mt-4 text-center text-sm text-dark-text-secondary">
+          Beim ersten Login wird automatisch ein Benutzerkonto erstellt.
         </div>
       </div>
     </div>
