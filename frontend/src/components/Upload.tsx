@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Layout from './Layout';
@@ -17,17 +17,31 @@ const Upload: React.FC<UploadProps> = ({ user, onLogout }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    status: 'draft'
+    status: 'published'
   });
   const [files, setFiles] = useState({
     video: null as File | null,
     preview: null as File | null,
     cover: null as File | null
   });
+  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [availableTags, setAvailableTags] = useState<any[]>([]);
 
   const videoInputRef = useRef<HTMLInputElement>(null);
   const previewInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await axios.get('/api/tags');
+        setAvailableTags(response.data);
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+      }
+    };
+    fetchTags();
+  }, []);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -86,7 +100,7 @@ const Upload: React.FC<UploadProps> = ({ user, onLogout }) => {
         uploadData.append('cover', files.cover);
       }
 
-      await axios.post('/api/videos/upload', uploadData, {
+      const response = await axios.post('/api/videos/upload', uploadData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -97,6 +111,16 @@ const Upload: React.FC<UploadProps> = ({ user, onLogout }) => {
           setUploadProgress(progress);
         },
       });
+
+      const videoId = response.data.video.id;
+
+      for (const tagId of selectedTags) {
+        try {
+          await axios.post(`/api/tags/${tagId}/videos/${videoId}`);
+        } catch (tagError) {
+          console.error('Error adding tag to video:', tagError);
+        }
+      }
 
       navigate('/');
     } catch (error: any) {
@@ -264,35 +288,18 @@ const Upload: React.FC<UploadProps> = ({ user, onLogout }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-dark-text mb-2">
-                Titel *
-              </label>
-              <input
-                type="text"
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                required
-                className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-md text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-dark-text mb-2">
-                Status
-              </label>
-              <select
-                id="status"
-                value={formData.status}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-md text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="draft">Entwurf</option>
-                <option value="published">Veröffentlicht</option>
-              </select>
-            </div>
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-dark-text mb-2">
+              Titel *
+            </label>
+            <input
+              type="text"
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              required
+              className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-md text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
 
           <div>
@@ -306,6 +313,34 @@ const Upload: React.FC<UploadProps> = ({ user, onLogout }) => {
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-md text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-dark-text mb-2">
+              Tags
+            </label>
+            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto border border-dark-border rounded-md p-3 bg-dark-bg">
+              {availableTags.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedTags(prev => 
+                      prev.includes(tag.id) 
+                        ? prev.filter(id => id !== tag.id)
+                        : [...prev, tag.id]
+                    );
+                  }}
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    selectedTags.includes(tag.id)
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-dark-surface text-dark-text hover:bg-dark-border'
+                  }`}
+                >
+                  {tag.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           {uploading && (
